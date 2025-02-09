@@ -1,0 +1,38 @@
+{
+  "workers": [
+    {
+      "name": "simple static file processor",
+      "port": 8080,
+      "protocolConfig": {
+        "protocol": "HTTP_1_1"
+      },
+      "filtersConfig": [
+        {
+          "filterType": "HTTP_BASIC",
+          "path": "/**",
+          "realm": "custom-admin",
+          "httpMethods": [
+            "GET"
+          ],
+          "hashAlgorithm": "NO",
+          "credentialFiles": [
+            ".pass"
+          ]
+        }
+      ],
+      "handlersConfig": [
+        {
+          "handlerType": "HTTP_STATIC_CONTENT",
+          "path": "/**",
+          "httpMethods": [
+            "GET"
+          ],
+          "dirs": [
+            "./"
+          ]
+        }
+      ]
+    }
+  ]
+}
+

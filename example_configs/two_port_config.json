@@ -1,0 +1,52 @@
+{
+  "workers": [
+    {
+      "name": "http FPS",
+      "port": 80,
+      "protocolConfig": {
+        "protocol": "HTTP_1_1"
+      },
+      "filtersConfig": [],
+      "handlersConfig": [
+        {
+          "handlerType": "HTTP_STATIC_CONTENT",
+          "path": "/**",
+          "httpMethods": [
+            "GET"
+          ],
+          "dirs": [
+            "./"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "https FPS",
+      "port": 443,
+      "protocolConfig": {
+        "protocol": "HTTPS_1_1",
+        "keystorePath": "sparrow_keystore_with_rsa.p12",
+        "strictHostname": "localhost",
+        "keyStoreType": "PKCS12",
+        "sslAlgorithm": "TLS_1_3",
+        "keyManagerAlgorithm": "PKIX",
+        "trustManagerAlgorithm": "PKIX",
+        "secureRandomAlgorithm": "SHA1PRNG"
+      },
+      "filtersConfig": [],
+      "handlersConfig": [
+        {
+          "handlerType": "HTTP_STATIC_CONTENT",
+          "path": "/**",
+          "httpMethods": [
+            "GET"
+          ],
+          "dirs": [
+            "./"
+          ]
+        }
+      ]
+    }
+  ]
+}
+

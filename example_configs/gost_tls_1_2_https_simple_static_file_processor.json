@@ -1,0 +1,43 @@
+{
+  "workers": [
+    {
+      "name": "simple static file processor",
+      "port": 443,
+      "protocolConfig": {
+        "protocol": "HTTPS_1_1",
+        "keystorePath": null,
+        "providerConfig": {
+          "providerFilePathList": [
+            "E:\\dev\\java-csp-5.0.46605-A-e80230f4\\*"
+          ],
+          "providerNameList": [
+            "JCP",
+            "Crypto",
+            "RevCheck",
+            "JTLS"
+          ]
+        },
+        "strictHostname": "localhost",
+        "keyStoreType": "HD_IMAGE",
+        "sslAlgorithm": "GOST_TLS_1_2",
+        "keyManagerAlgorithm": "GOST_X509",
+        "trustManagerAlgorithm": "GOST_X509",
+        "secureRandomAlgorithm": null
+      },
+      "filtersConfig": [],
+      "handlersConfig": [
+        {
+          "handlerType": "HTTP_STATIC_CONTENT",
+          "path": "/**",
+          "httpMethods": [
+            "GET"
+          ],
+          "dirs": [
+            "./"
+          ]
+        }
+      ]
+    }
+  ]
+}
+
