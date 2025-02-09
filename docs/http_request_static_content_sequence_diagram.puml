@@ -1,0 +1,67 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+hide footbox
+
+actor Client
+
+box server
+    boundary TCPServer
+    participant HttpRequestProcessor
+    participant SimpleHttpDispatcher
+    ' если есть
+    participant BasicAuthHttp1_1RequestFilter
+
+    participant "TrieRequestRouter(фильтры)"
+    participant "TrieRequestRouter(обработчики)"
+
+    participant StaticContentHttpRequestHandler
+end box
+database FileSystem
+
+
+title Обработка HTTP-запроса HttpRequestProcessor
+TCPServer -> TCPServer : запуск сервера
+==Обработка запроса в рамках одной HTTP-сессии==
+loop "пока сессия существует"
+    Client -> TCPServer : HTTP-запрос
+    TCPServer -> HttpRequestProcessor : Передача управления
+    HttpRequestProcessor -> HttpRequestProcessor : Парсинг HTTP-запроса в неизменяемый объект
+    HttpRequestProcessor -> SimpleHttpDispatcher : Запрос обработчика для запроса (маршрутизация HTTP-запроса)
+    |||
+    group "аутентификация (если присутствует в конфигурации)"
+        SimpleHttpDispatcher -> "TrieRequestRouter(фильтры)" : Получение фильтра по URL
+        SimpleHttpDispatcher <- "TrieRequestRouter(фильтры)" : Фильтр запроса
+        SimpleHttpDispatcher -> BasicAuthHttp1_1RequestFilter : Проверка заголовка "Authorization"
+
+        alt "успешная аутентификация"
+            SimpleHttpDispatcher <- BasicAuthHttp1_1RequestFilter : void
+        else "исключение во время выполнения"
+            SimpleHttpDispatcher <- BasicAuthHttp1_1RequestFilter : Ошибка аутентификации
+            HttpRequestProcessor <- SimpleHttpDispatcher : Ошибка аутентификации
+            Client <- HttpRequestProcessor : HTTP/1.1 401
+        end
+    end group
+    |||
+    SimpleHttpDispatcher -> "TrieRequestRouter(обработчики)" : Запрос обработчика для указанного URL
+    alt "если для данного пути имеется обработчик"
+        SimpleHttpDispatcher <- "TrieRequestRouter(обработчики)" : Получение обработчика для запроса
+    else "если для данного пути отсутствует обработчик"
+        SimpleHttpDispatcher <- "TrieRequestRouter(обработчики)" : Исключение во время выполнения
+        HttpRequestProcessor <- SimpleHttpDispatcher : Ресурс не найден
+        Client <- HttpRequestProcessor : HTTP/1.1 404
+    end
+    HttpRequestProcessor <- SimpleHttpDispatcher : Возврат найденного обработчика
+    |||
+    HttpRequestProcessor -> StaticContentHttpRequestHandler : Передача запроса на обработку
+    StaticContentHttpRequestHandler -> FileSystem : Чтение файла
+    alt "если запрашиваемый ресурс был найден"
+        StaticContentHttpRequestHandler <- FileSystem : Массив байт
+    else "если запрашиваемый ресурс не найден"
+        StaticContentHttpRequestHandler <- FileSystem : Исключение во время выполнения
+        StaticContentHttpRequestHandler -> StaticContentHttpRequestHandler : Формирует Http-сообщение с 404 статус кодом
+    end
+    StaticContentHttpRequestHandler -> StaticContentHttpRequestHandler : Запись сообщения в канал
+    HttpRequestProcessor <- StaticContentHttpRequestHandler : void (возврат управления)
+    HttpRequestProcessor -> HttpRequestProcessor : Ожидание запроса от пользователя, пока сессия открыта
+end
+@enduml

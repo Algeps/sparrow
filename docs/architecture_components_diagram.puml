@@ -1,0 +1,26 @@
+@startuml
+'https://plantuml.com/component-diagram
+component ServerApplication
+component ServerConfig
+component WorkerFactory
+
+component Worker
+component Server
+component RequestProcessor
+component Dispatcher
+component RequestFilter
+component RequestHandler
+
+'''''''''''''''''''''''''''''''''''
+ServerApplication "1" *--> "1..*" Worker
+ServerApplication *-> ServerConfig
+ServerApplication *-> WorkerFactory
+WorkerFactory -> Worker
+
+Worker *--> Server
+Server *--> RequestProcessor
+RequestProcessor *--> Dispatcher
+Dispatcher "1" *--> "0..*" RequestFilter
+Dispatcher "1" *--> "1..*" RequestHandler
+
+@enduml

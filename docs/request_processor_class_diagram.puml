@@ -1,0 +1,34 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+interface RequestProcessor {
++ handle(byteChannel: ByteChannel): void
+}
+
+interface ByteChannel {
++ read(dst: ByteBuffer): int
++ write(src: ByteBuffer): int
++ close(): void
+}
+
+class SocketChannel implements ByteChannel {
++ read(dst: ByteBuffer): int
++ write(src: ByteBuffer): int
++ close(): void
+}
+
+
+class SslByteChannel implements ByteChannel {
+- byteChannel: ByteChannel
+- sslEngine: SSLEngine
++ SslByteChannel(byteChannel: ByteChannel, sslEngine: SSLEngine)
++ startHandshake(): void
++ read(dst: ByteBuffer): int
++ write(src: ByteBuffer): int
++ close(): void
+}
+
+'dependencies:
+ByteChannel <.  RequestProcessor
+
+@enduml

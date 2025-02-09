@@ -1,0 +1,52 @@
+@startuml
+'https://plantuml.com/class-diagram
+interface HttpRequest {
+    + {static} HttpRequest.Builder newBuilder(HttpVersion httpVersion)
+}
+
+interface "HttpRequest.Builder" as HttpRequest_Builder {
+    + {abstract} HttpRequest build()
+--
+}
+
+class HttpRequestImpl {
+--
+}
+
+class "HttpRequestImpl.Builder" as HttpRequestImpl_Builder {
+--
+    + HttpRequest build()
+}
+
+
+HttpRequest +-- HttpRequest_Builder : вложен
+HttpRequest <|.. HttpRequestImpl
+
+HttpRequest_Builder <|.. HttpRequestImpl_Builder
+HttpRequestImpl +-- HttpRequestImpl_Builder : вложен
+
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+enum HttpVersion {
+    HTTP1_1
+}
+
+abstract class HttpRequestParser {
+    # {static} SUPPORTED_ASCII_SYMBOLS_IN_NAME_HEADER_ARRAY = new boolean[127]
+    # {static} VISIBLE_CHARACTERS_WITH_SPACE_ARRAY = new boolean[127]
+    # HttpRequest.Builder httpRequestBuilder
+    --
+    + {static} HttpRequestParser connect(ReadableByteChannel readableByteChannel, HttpVersion version)
+
+    + {abstract} HttpRequest getHttpRequest() throws IOException
+}
+
+class Http1_1RequestParser1_1 {
+    + getHttpRequest() : HttpRequest throws IOException
+}
+
+HttpRequestParser ..> HttpVersion : использует
+HttpRequestParser ..> HttpRequest : использует
+
+HttpRequestParser <|-- Http1_1RequestParser1_1
+@enduml

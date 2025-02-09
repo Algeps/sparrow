@@ -1,0 +1,77 @@
+@startuml
+'https://plantuml.com/class-diagram
+package "worker" {
+    class Worker
+}
+
+package "server" {
+    interface Server
+    class TcpServer
+    class STcpServer
+
+    TcpServer .|> Server
+    STcpServer .|> Server
+}
+
+package "requestprocessor" {
+    interface RequestProcessor
+    class HttpRequestProcessor
+
+    RequestProcessor <|. HttpRequestProcessor
+}
+
+package "dispatcher" {
+    interface Dispatcher
+    interface HttpDispatcher
+    class SimpleHttpDispatcher
+
+    Dispatcher <|. HttpDispatcher
+    HttpDispatcher <|. SimpleHttpDispatcher
+}
+
+package "requestrouter" {
+    interface RequestRouter<T>
+    class TrieRequestRouter<T>
+
+    RequestRouter <|. TrieRequestRouter
+
+    /'package "requestmatcher" {
+        interface RequestMatcher
+        interface HttpRequestMatcher
+        class HttpRequestMatcherImpl
+
+        RequestMatcher <|. HttpRequestMatcher
+        HttpRequestMatcher <|. HttpRequestMatcherImpl
+    }'/
+}
+
+package "requestfilter" {
+    interface RequestFilter
+    interface HttpRequestFilter
+    class BasicAuthHttp1_1RequestFilter
+
+    RequestFilter <|. HttpRequestFilter
+    HttpRequestFilter <|.. BasicAuthHttp1_1RequestFilter
+}
+
+package "requesthandler" {
+    interface RequestHandler
+    interface HttpRequestHandler
+    class StaticContentHttpRequestHandler
+
+    RequestHandler <|. HttpRequestHandler
+    HttpRequestHandler <|.. StaticContentHttpRequestHandler
+}
+
+'''''''''''''''''''''''''''''''''''
+Worker *--> Server
+Server *--> RequestProcessor
+RequestProcessor *--> Dispatcher
+
+SimpleHttpDispatcher *----> RequestRouter : Маршрутизация\nфильтров
+SimpleHttpDispatcher *----> RequestRouter : \n\nМаршрутизация\nконечных\nобработчиков
+
+
+RequestRouter "\n0" *-down-> "0..*\n\n" RequestFilter
+RequestRouter "\n1" *-down-> "1..*\n\n" RequestHandler
+@enduml
