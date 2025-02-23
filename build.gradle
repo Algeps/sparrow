@@ -1,0 +1,81 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group = 'ru.algeps.sparrow'
+version = '0.0.3'
+
+jar {
+    manifest {
+        attributes(
+                "Main-Class": 'ru.algeps.sparrow.ServerMain'
+        )
+    }
+}
+
+shadowJar {
+    archiveBaseName.set("sparrow")
+    archiveClassifier.set("all")
+    archiveVersion.set((String) version)
+}
+
+tasks.register('copyDependencies', Copy) {
+    var outputDir = file("$buildDir/libs/libs")
+    outputDir.mkdirs()
+    into outputDir
+    from configurations.compileClasspath
+}
+build.dependsOn copyDependencies
+
+tasks.register('run', JavaExec) {
+    group = 'Execution'
+    description = 'Run the main class'
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'ru.algeps.sparrow.ServerMain'
+    systemProperties = System.properties as Map<String, ?>
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // main
+    implementation "org.slf4j:slf4j-api:$slf4j_apiVersion"
+    implementation "ch.qos.logback:logback-classic:$logback_classicVersion"
+    implementation "com.fasterxml.jackson.core:jackson-databind:$fasterxmlJacksonVersion"
+    implementation "org.bouncycastle:bctls-jdk18on:$bc_version"
+    implementation "org.bouncycastle:bcprov-jdk18on:$bc_version"
+    implementation "org.bouncycastle:bcpkix-jdk18on:$bc_version"
+
+    // gost tls
+    //runtimeOnly fileTree(dir: "E:\\dev\\java-csp-5.0.46605-A-e80230f4", includes: ["*.jar"], excludes: ["samples*"])
+
+    //test
+    testImplementation platform("org.junit:junit-bom:$junitBomVersion")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockitoJunitVersion"
+    testImplementation "org.slf4j:slf4j-api:$slf4j_apiVersion"
+    testImplementation "ch.qos.logback:logback-classic:$logback_classicVersion"
+    testImplementation "org.awaitility:awaitility:$awaitilityVersion"
+    // request testing
+    testImplementation "org.apache.httpcomponents.client5:httpclient5:$apache_httpclient5Version"
+    // fuzzing test
+    testImplementation "com.code-intelligence:jazzer-api:$jazzerVersion"
+    testImplementation "com.code-intelligence:jazzer:$jazzerVersion"
+    testImplementation "com.code-intelligence:jazzer-junit:$jazzerVersion"
+}
+
+test {
+    maxHeapSize "4096m"
+    /*jvmArgs = [
+            "-Dcom.sun.management.jmxremote.port=8000",
+            "-Dcom.sun.management.jmxremote.ssl=false",
+            "-Dcom.sun.management.jmxremote.authenticate=false"
+    ]*/
+    /*jvmArgs = [
+            "-Djava.util.logging.config.file=./fine_level.log_config.properties"
+    ]*/
+    useJUnitPlatform()
+}
